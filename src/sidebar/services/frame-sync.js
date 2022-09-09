@@ -366,37 +366,16 @@ export class FrameSyncService {
 
     guestRPC.on(
       'showAnnotations',
-      /**
-       * @param {string[]} tags
-       * @param {boolean} focusFirstInSelection - Whether to give keyboard focus
-       *   to the first annotation in the selection.
-       */
-      (tags, focusFirstInSelection = false) => {
-        // Since annotations are selected by ID rather than tag, this logic
-        // currently only supports saved annotations.
-        const ids = this._store.findIDsForTags(tags);
-        this._store.selectAnnotations(ids);
+      /** @param {string[]} tags */ tags => {
+        this._store.selectAnnotations(this._store.findIDsForTags(tags));
         this._store.selectTab('annotation');
-
-        // Attempt to transfer keyboard focus to the first selected annotation.
-        //
-        // To do this we need to focus both the annotation card and the frame
-        // itself. It doesn't matter in which order.
-        if (ids.length > 0 && focusFirstInSelection) {
-          // Request the annotation card to be focused. This is handled asynchronously.
-          this._store.setAnnotationFocusRequest(ids[0]);
-
-          // Focus the sidebar frame. This may fail in WebKit-based browsers
-          // if the user has no interacted with the frame since it loaded.
-          window.focus();
-        }
       }
     );
 
     guestRPC.on(
-      'hoverAnnotations',
+      'focusAnnotations',
       /** @param {string[]} tags */ tags => {
-        this._store.hoverAnnotations(tags || []);
+        this._store.focusAnnotations(tags || []);
       }
     );
 
@@ -510,16 +489,16 @@ export class FrameSyncService {
   }
 
   /**
-   * Mark annotations as hovered.
+   * Focus annotations with the given $tags.
    *
-   * This is used to indicate the highlights in the document that correspond
-   * to hovered annotations in the sidebar.
+   * This is used to indicate the highlight in the document that corresponds to
+   * a given annotation in the sidebar.
    *
    * @param {string[]} tags - annotation $tags
    */
-  hoverAnnotations(tags) {
-    this._store.hoverAnnotations(tags);
-    this._guestRPC.forEach(rpc => rpc.call('hoverAnnotations', tags));
+  focusAnnotations(tags) {
+    this._store.focusAnnotations(tags);
+    this._guestRPC.forEach(rpc => rpc.call('focusAnnotations', tags));
   }
 
   /**

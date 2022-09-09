@@ -26,7 +26,7 @@ describe('SidebarView', () => {
 
   beforeEach(() => {
     fakeFrameSync = {
-      hoverAnnotations: sinon.stub(),
+      focusAnnotations: sinon.stub(),
       scrollToAnnotation: sinon.stub(),
     };
     fakeLoadAnnotationsService = {
@@ -147,9 +147,9 @@ describe('SidebarView', () => {
         createComponent();
         assert.calledOnce(fakeFrameSync.scrollToAnnotation);
         assert.calledWith(fakeFrameSync.scrollToAnnotation, 'myTag');
-        assert.calledOnce(fakeFrameSync.hoverAnnotations);
+        assert.calledOnce(fakeFrameSync.focusAnnotations);
         assert.calledWith(
-          fakeFrameSync.hoverAnnotations,
+          fakeFrameSync.focusAnnotations,
           sinon.match(['myTag'])
         );
       });

@@ -6,7 +6,6 @@ import { checkAccessibility } from '../../../test-util/accessibility';
 import { mockImportedComponents } from '../../../test-util/mock-imported-components';
 
 describe('ThreadCard', () => {
-  let container;
   let fakeDebounce;
   let fakeFrameSync;
   let fakeStore;
@@ -16,24 +15,18 @@ describe('ThreadCard', () => {
 
   function createComponent(props) {
     return mount(
-      <ThreadCard frameSync={fakeFrameSync} thread={fakeThread} {...props} />,
-      { attachTo: container }
+      <ThreadCard frameSync={fakeFrameSync} thread={fakeThread} {...props} />
     );
   }
 
   beforeEach(() => {
-    container = document.createElement('div');
-    document.body.append(container);
-
     fakeDebounce = sinon.stub().returnsArg(0);
     fakeFrameSync = {
-      hoverAnnotations: sinon.stub(),
+      focusAnnotations: sinon.stub(),
       scrollToAnnotation: sinon.stub(),
     };
     fakeStore = {
-      annotationFocusRequest: sinon.stub().returns(null),
-      clearAnnotationFocusRequest: sinon.stub(),
-      isAnnotationHovered: sinon.stub().returns(false),
+      isAnnotationFocused: sinon.stub().returns(false),
       route: sinon.stub(),
     };
 
@@ -51,7 +44,6 @@ describe('ThreadCard', () => {
 
   afterEach(() => {
     $imports.$restore();
-    container.remove();
   });
 
   it('renders a `Thread` for the passed `thread`', () => {
@@ -59,12 +51,12 @@ describe('ThreadCard', () => {
     assert(wrapper.find('Thread').props().thread === fakeThread);
   });
 
-  it('applies a hovered CSS class if the annotation thread is hovered', () => {
-    fakeStore.isAnnotationHovered.returns(true);
+  it('applies a focused CSS class if the annotation thread is focused', () => {
+    fakeStore.isAnnotationFocused.returns(true);
 
     const wrapper = createComponent();
 
-    assert.isTrue(wrapper.find(threadCardSelector).hasClass('is-hovered'));
+    assert.isTrue(wrapper.find(threadCardSelector).hasClass('is-focused'));
   });
 
   describe('mouse and click events', () => {
@@ -81,7 +73,7 @@ describe('ThreadCard', () => {
 
       wrapper.find(threadCardSelector).simulate('mouseenter');
 
-      assert.calledWith(fakeFrameSync.hoverAnnotations, sinon.match(['myTag']));
+      assert.calledWith(fakeFrameSync.focusAnnotations, sinon.match(['myTag']));
     });
 
     it('unfocuses the annotation thread when mouse exits', () => {
@@ -89,7 +81,7 @@ describe('ThreadCard', () => {
 
       wrapper.find(threadCardSelector).simulate('mouseleave');
 
-      assert.calledWith(fakeFrameSync.hoverAnnotations, sinon.match([]));
+      assert.calledWith(fakeFrameSync.focusAnnotations, sinon.match([]));
     });
 
     ['button', 'a'].forEach(tag => {
@@ -107,31 +99,6 @@ describe('ThreadCard', () => {
         });
         assert.notCalled(fakeFrameSync.scrollToAnnotation);
       });
-    });
-  });
-
-  describe('keyboard focus request handling', () => {
-    [null, 'other-annotation'].forEach(focusRequest => {
-      it('does not focus thread if there is no matching focus request', () => {
-        fakeStore.annotationFocusRequest.returns(focusRequest);
-
-        createComponent();
-
-        const threadCard = container.querySelector(threadCardSelector);
-
-        assert.notEqual(document.activeElement, threadCard);
-        assert.notCalled(fakeStore.clearAnnotationFocusRequest);
-      });
-    });
-
-    it('gives focus to the thread if there is a matching focus request', () => {
-      fakeStore.annotationFocusRequest.returns('t1');
-
-      createComponent();
-
-      const threadCard = container.querySelector(threadCardSelector);
-      assert.equal(document.activeElement, threadCard);
-      assert.called(fakeStore.clearAnnotationFocusRequest);
     });
   });
 

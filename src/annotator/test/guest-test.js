@@ -220,17 +220,17 @@ describe('Guest', () => {
       });
     });
 
-    describe('on "hoverAnnotations" event', () => {
+    describe('on "focusAnnotations" event', () => {
       it('focus on annotations', () => {
         const guest = createGuest();
-        sandbox.stub(guest, '_hoverAnnotations').callThrough();
+        sandbox.stub(guest, '_focusAnnotations').callThrough();
         const tags = ['t1', 't2'];
         sidebarRPC().call.resetHistory();
 
-        emitHostEvent('hoverAnnotations', tags);
+        emitHostEvent('focusAnnotations', tags);
 
-        assert.calledWith(guest._hoverAnnotations, tags);
-        assert.calledWith(sidebarRPC().call, 'hoverAnnotations', tags);
+        assert.calledWith(guest._focusAnnotations, tags);
+        assert.calledWith(sidebarRPC().call, 'focusAnnotations', tags);
       });
     });
 
@@ -267,15 +267,15 @@ describe('Guest', () => {
 
         emitHostEvent('selectAnnotations', tags, toggle);
 
-        assert.calledWith(guest.selectAnnotations, tags, { toggle });
+        assert.calledWith(guest.selectAnnotations, tags, toggle);
         assert.calledWith(sidebarRPC().call, 'openSidebar');
       });
     });
   });
 
   describe('events from sidebar frame', () => {
-    describe('on "hoverAnnotations" event', () => {
-      it('marks associated highlights as focused', () => {
+    describe('on "focusAnnotations" event', () => {
+      it('focuses any annotations with a matching tag', () => {
         const highlight0 = document.createElement('span');
         const highlight1 = document.createElement('span');
         const guest = createGuest();
@@ -284,7 +284,7 @@ describe('Guest', () => {
           { annotation: { $tag: 'tag2' }, highlights: [highlight1] },
         ];
 
-        emitSidebarEvent('hoverAnnotations', ['tag1']);
+        emitSidebarEvent('focusAnnotations', ['tag1']);
 
         assert.calledWith(
           highlighter.setHighlightsFocused,
@@ -293,7 +293,7 @@ describe('Guest', () => {
         );
       });
 
-      it('marks highlights of other annotations as not focused', () => {
+      it('unfocuses any annotations without a matching tag', () => {
         const highlight0 = document.createElement('span');
         const highlight1 = document.createElement('span');
         const guest = createGuest();
@@ -302,7 +302,7 @@ describe('Guest', () => {
           { annotation: { $tag: 'tag2' }, highlights: [highlight1] },
         ];
 
-        emitSidebarEvent('hoverAnnotations', ['tag1']);
+        emitSidebarEvent('focusAnnotations', ['tag1']);
 
         assert.calledWith(
           highlighter.setHighlightsFocused,
@@ -311,13 +311,13 @@ describe('Guest', () => {
         );
       });
 
-      it('updates hovered tag set', () => {
+      it('updates focused tag set', () => {
         const guest = createGuest();
 
-        emitSidebarEvent('hoverAnnotations', ['tag1']);
-        emitSidebarEvent('hoverAnnotations', ['tag2', 'tag3']);
+        emitSidebarEvent('focusAnnotations', ['tag1']);
+        emitSidebarEvent('focusAnnotations', ['tag2', 'tag3']);
 
-        assert.deepEqual([...guest.hoveredAnnotationTags], ['tag2', 'tag3']);
+        assert.deepEqual([...guest.focusedAnnotationTags], ['tag2', 'tag3']);
       });
     });
 
@@ -591,13 +591,13 @@ describe('Guest', () => {
       // Hover the highlight
       fakeHighlight.dispatchEvent(new Event('mouseover', { bubbles: true }));
       assert.calledWith(highlighter.getHighlightsContainingNode, fakeHighlight);
-      assert.calledWith(sidebarRPC().call, 'hoverAnnotations', [
+      assert.calledWith(sidebarRPC().call, 'focusAnnotations', [
         'highlight-ann-tag',
       ]);
 
       // Un-hover the highlight
       fakeHighlight.dispatchEvent(new Event('mouseout', { bubbles: true }));
-      assert.calledWith(sidebarRPC().call, 'hoverAnnotations', []);
+      assert.calledWith(sidebarRPC().call, 'focusAnnotations', []);
     });
 
     it('does not focus annotations in the sidebar when a non-highlight element is hovered', () => {
@@ -805,12 +805,7 @@ describe('Guest', () => {
       FakeAdder.instance.options.onShowAnnotations(tags);
 
       assert.calledWith(sidebarRPC().call, 'openSidebar');
-      assert.calledWith(
-        sidebarRPC().call,
-        'showAnnotations',
-        tags,
-        true // Focus annotation in sidebar
-      );
+      assert.calledWith(sidebarRPC().call, 'showAnnotations', tags);
     });
   });
 
@@ -821,19 +816,14 @@ describe('Guest', () => {
 
       guest.selectAnnotations(tags);
 
-      assert.calledWith(
-        sidebarRPC().call,
-        'showAnnotations',
-        tags,
-        false // Don't focus annotation in sidebar
-      );
+      assert.calledWith(sidebarRPC().call, 'showAnnotations', tags);
     });
 
     it('toggles the annotations if `toggle` is true', () => {
       const guest = createGuest();
       const tags = ['t1', 't2'];
 
-      guest.selectAnnotations(tags, { toggle: true });
+      guest.selectAnnotations(tags, true /* toggle */);
 
       assert.calledWith(sidebarRPC().call, 'toggleAnnotationSelection', tags);
     });
@@ -844,20 +834,6 @@ describe('Guest', () => {
       guest.selectAnnotations([]);
 
       assert.calledWith(sidebarRPC().call, 'openSidebar');
-    });
-
-    it('focuses first selected annotation in sidebar if `focusInSidebar` is true', () => {
-      const guest = createGuest();
-      const tags = ['t1', 't2'];
-
-      guest.selectAnnotations(tags, { focusInSidebar: true });
-
-      assert.calledWith(
-        sidebarRPC().call,
-        'showAnnotations',
-        tags,
-        true // Focus in sidebar
-      );
     });
   });
 
@@ -1181,11 +1157,11 @@ describe('Guest', () => {
       };
       const annotation = { $tag: 'tag1', target: [target] };
 
-      // Hover the annotation (in the sidebar) before it is anchored in the page.
-      const [, hoverAnnotationsCallback] = sidebarRPC().on.args.find(
-        args => args[0] === 'hoverAnnotations'
+      // Focus the annotation (in the sidebar) before it is anchored in the page.
+      const [, focusAnnotationsCallback] = sidebarRPC().on.args.find(
+        args => args[0] === 'focusAnnotations'
       );
-      hoverAnnotationsCallback([annotation.$tag]);
+      focusAnnotationsCallback([annotation.$tag]);
       const anchors = await guest.anchor(annotation);
 
       // Check that the new highlights are already in the focused state.

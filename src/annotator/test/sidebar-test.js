@@ -1007,7 +1007,7 @@ describe('Sidebar', () => {
       assert.isNull(sidebar.bucketBar);
     });
 
-    it('calls the "hoverAnnotations" RPC method', () => {
+    it('calls the "focusAnnotations" RPC method', () => {
       const sidebar = createSidebar();
       connectGuest(sidebar);
       const { onFocusAnnotations } = FakeBucketBar.getCall(0).args[1];
@@ -1015,7 +1015,7 @@ describe('Sidebar', () => {
 
       onFocusAnnotations(tags);
 
-      assert.calledWith(guestRPC().call, 'hoverAnnotations', tags);
+      assert.calledWith(guestRPC().call, 'focusAnnotations', tags);
     });
 
     it('calls the "scrollToClosestOffScreenAnchor" RPC method', () => {

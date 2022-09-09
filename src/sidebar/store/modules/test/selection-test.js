@@ -37,7 +37,7 @@ describe('sidebar/store/modules/selection', () => {
     });
   });
 
-  describe('setExpanded', () => {
+  describe('setExpanded()', () => {
     it('sets the expanded state of the annotation', () => {
       store.setExpanded('parent_id', true);
       store.setExpanded('whatnot', false);
@@ -96,7 +96,7 @@ describe('sidebar/store/modules/selection', () => {
     });
   });
 
-  describe('selectAnnotations', () => {
+  describe('selectAnnotations()', () => {
     it('adds the passed annotations to the selectedAnnotations', () => {
       store.selectAnnotations([1, 2, 3]);
       assert.deepEqual(getSelectionState().selected, {
@@ -123,7 +123,7 @@ describe('sidebar/store/modules/selection', () => {
     });
   });
 
-  describe('toggleSelectedAnnotations', () => {
+  describe('toggleSelectedAnnotations()', () => {
     it('adds annotations missing from the selectedAnnotations', () => {
       store.selectAnnotations([1, 2]);
       store.toggleSelectedAnnotations([3, 4]);
@@ -146,7 +146,7 @@ describe('sidebar/store/modules/selection', () => {
     });
   });
 
-  describe('changeFocusModeUser', () => {
+  describe('CHANGE_FOCUS_MODE_USER', () => {
     it('clears selection', () => {
       store.selectAnnotations([1, 2, 3]);
       store.setForcedVisible(2, true);
@@ -161,17 +161,7 @@ describe('sidebar/store/modules/selection', () => {
     });
   });
 
-  describe('setAnnotationFocusRequest', () => {
-    it('sets annotation ID returned by `annotationFocusRequest`', () => {
-      assert.equal(store.annotationFocusRequest(), null);
-      store.setAnnotationFocusRequest('ann1');
-      assert.equal(store.annotationFocusRequest(), 'ann1');
-      store.clearAnnotationFocusRequest();
-      assert.equal(store.annotationFocusRequest(), null);
-    });
-  });
-
-  describe('setFilter', () => {
+  describe('SET_FILTER', () => {
     it('clears selection', () => {
       store.selectAnnotations([1, 2, 3]);
       store.setForcedVisible(2, true);
@@ -183,7 +173,7 @@ describe('sidebar/store/modules/selection', () => {
     });
   });
 
-  describe('setFilterQuery', () => {
+  describe('SET_FILTER_QUERY', () => {
     it('clears selection', () => {
       store.selectAnnotations([1, 2, 3]);
       store.setForcedVisible(2, true);
@@ -195,7 +185,7 @@ describe('sidebar/store/modules/selection', () => {
     });
   });
 
-  describe('toggleFocusMode', () => {
+  describe('SET_FOCUS_MODE', () => {
     it('clears selection', () => {
       store.selectAnnotations([1, 2, 3]);
       store.setForcedVisible(2, true);
@@ -207,16 +197,14 @@ describe('sidebar/store/modules/selection', () => {
     });
   });
 
-  describe('removeAnnotations', () => {
+  describe('#REMOVE_ANNOTATIONS', () => {
     it('removing an annotation should also remove it from the selection', () => {
       store.selectAnnotations([1, 2, 3]);
       store.setForcedVisible(2, true);
       store.setForcedVisible(1, true);
       store.setExpanded(1, true);
       store.setExpanded(2, true);
-
       store.removeAnnotations([{ id: 2 }]);
-
       assert.deepEqual(getSelectionState().selected, {
         1: true,
         3: true,
@@ -226,7 +214,7 @@ describe('sidebar/store/modules/selection', () => {
     });
   });
 
-  describe('selectTab', () => {
+  describe('selectTab()', () => {
     it('sets the selected tab', () => {
       store.selectTab('annotation');
       assert.equal(getSelectionState().selectedTab, 'annotation');

@@ -148,14 +148,7 @@ export class Guest {
     this._adder = new Adder(this.element, {
       onAnnotate: () => this.createAnnotation(),
       onHighlight: () => this.createAnnotation({ highlight: true }),
-
-      // When the "Show" button is triggered, open the sidebar and select the
-      // annotations. Also give keyboard focus to the first selected annotation.
-      // This is an important affordance for eg. screen reader users as it gives
-      // them an efficient way to navigate from highlights in the document to
-      // the corresponding comments in the sidebar.
-      onShowAnnotations: tags =>
-        this.selectAnnotations(tags, { focusInSidebar: true }),
+      onShowAnnotations: tags => this.selectAnnotations(tags),
     });
 
     this._selectionObserver = new SelectionObserver(range => {
@@ -236,13 +229,13 @@ export class Guest {
     this._setupElementEvents();
 
     /**
-     * Tags of currently hovered annotations. This is used to set the hovered
+     * Tags of currently focused annotations. This is used to set the focused
      * state correctly for new highlights if the associated annotation is already
-     * hovered in the sidebar.
+     * focused in the sidebar.
      *
      * @type {Set<string>}
      */
-    this._hoveredAnnotations = new Set();
+    this._focusedAnnotations = new Set();
   }
 
   // Add DOM event listeners for clicks, taps etc. on the document and
@@ -269,7 +262,7 @@ export class Guest {
       const tags = annotationsAt(/** @type {Element} */ (target));
       if (tags.length && this._highlightsVisible) {
         const toggle = metaKey || ctrlKey;
-        this.selectAnnotations(tags, { toggle });
+        this.selectAnnotations(tags, toggle);
       }
     });
 
@@ -286,13 +279,13 @@ export class Guest {
     this._listeners.add(this.element, 'mouseover', ({ target }) => {
       const tags = annotationsAt(/** @type {Element} */ (target));
       if (tags.length && this._highlightsVisible) {
-        this._sidebarRPC.call('hoverAnnotations', tags);
+        this._sidebarRPC.call('focusAnnotations', tags);
       }
     });
 
     this._listeners.add(this.element, 'mouseout', () => {
       if (this._highlightsVisible) {
-        this._sidebarRPC.call('hoverAnnotations', []);
+        this._sidebarRPC.call('focusAnnotations', []);
       }
     });
 
@@ -340,9 +333,9 @@ export class Guest {
     this._hostRPC.on('createAnnotation', () => this.createAnnotation());
 
     this._hostRPC.on(
-      'hoverAnnotations',
+      'focusAnnotations',
       /** @param {string[]} tags */
-      tags => this._hoverAnnotations(tags)
+      tags => this._focusAnnotations(tags)
     );
 
     this._hostRPC.on(
@@ -360,7 +353,7 @@ export class Guest {
        * @param {string[]} tags
        * @param {boolean} toggle
        */
-      (tags, toggle) => this.selectAnnotations(tags, { toggle })
+      (tags, toggle) => this.selectAnnotations(tags, toggle)
     );
 
     this._hostRPC.on(
@@ -389,9 +382,9 @@ export class Guest {
     // Handlers for events sent when user hovers or clicks on an annotation card
     // in the sidebar.
     this._sidebarRPC.on(
-      'hoverAnnotations',
+      'focusAnnotations',
       /** @param {string[]} tags */
-      tags => this._hoverAnnotations(tags)
+      tags => this._focusAnnotations(tags)
     );
 
     this._sidebarRPC.on(
@@ -545,7 +538,7 @@ export class Guest {
       });
       anchor.highlights = highlights;
 
-      if (this._hoveredAnnotations.has(anchor.annotation.$tag)) {
+      if (this._focusedAnnotations.has(anchor.annotation.$tag)) {
         setHighlightsFocused(highlights, true);
       }
     };
@@ -670,9 +663,9 @@ export class Guest {
    *
    * @param {string[]} tags
    */
-  _hoverAnnotations(tags) {
-    this._hoveredAnnotations.clear();
-    tags.forEach(tag => this._hoveredAnnotations.add(tag));
+  _focusAnnotations(tags) {
+    this._focusedAnnotations.clear();
+    tags.forEach(tag => this._focusedAnnotations.add(tag));
 
     for (let anchor of this.anchors) {
       if (anchor.highlights) {
@@ -681,7 +674,7 @@ export class Guest {
       }
     }
 
-    this._sidebarRPC.call('hoverAnnotations', tags);
+    this._sidebarRPC.call('focusAnnotations', tags);
   }
 
   /**
@@ -742,22 +735,17 @@ export class Guest {
    * Show the given annotations in the sidebar.
    *
    * This sets up a filter in the sidebar to show only the selected annotations
-   * and opens the sidebar. Optionally it can also transfer keyboard focus to
-   * the annotation card for the first selected annotation.
+   * and opens the sidebar.
    *
    * @param {string[]} tags
-   * @param {object} options
-   *   @param {boolean} [options.toggle] - Toggle whether the annotations are
-   *     selected, as opposed to just selecting them
-   *   @param {boolean} [options.focusInSidebar] - Whether to transfer keyboard
-   *     focus to the card for the first annotation in the selection. This
-   *     option has no effect if {@link toggle} is true.
+   * @param {boolean} [toggle] - Toggle whether the annotations are selected
+   *   instead of showing them regardless of whether they are currently selected.
    */
-  selectAnnotations(tags, { toggle = false, focusInSidebar = false } = {}) {
+  selectAnnotations(tags, toggle = false) {
     if (toggle) {
       this._sidebarRPC.call('toggleAnnotationSelection', tags);
     } else {
-      this._sidebarRPC.call('showAnnotations', tags, focusInSidebar);
+      this._sidebarRPC.call('showAnnotations', tags);
     }
     this._sidebarRPC.call('openSidebar');
   }
@@ -793,12 +781,12 @@ export class Guest {
   }
 
   /**
-   * Return the tags of annotations that are currently displayed in a hovered
+   * Return the tags of annotations that are currently displayed in a focused
    * state.
    *
    * @return {Set<string>}
    */
-  get hoveredAnnotationTags() {
-    return this._hoveredAnnotations;
+  get focusedAnnotationTags() {
+    return this._focusedAnnotations;
   }
 }

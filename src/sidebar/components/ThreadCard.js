@@ -1,7 +1,7 @@
 import { Card } from '@hypothesis/frontend-shared';
 import classnames from 'classnames';
 import debounce from 'lodash.debounce';
-import { useCallback, useEffect, useMemo, useRef } from 'preact/hooks';
+import { useCallback, useMemo } from 'preact/hooks';
 
 import { useSidebarStore } from '../store';
 import { withServices } from '../service-context';
@@ -27,14 +27,14 @@ import Thread from './Thread';
 function ThreadCard({ frameSync, thread }) {
   const store = useSidebarStore();
   const threadTag = thread.annotation?.$tag ?? null;
-  const isHovered = threadTag && store.isAnnotationHovered(threadTag);
+  const isFocused = threadTag && store.isAnnotationFocused(threadTag);
   const focusThreadAnnotation = useMemo(
     () =>
       debounce(
         /** @param {string|null} tag */
         tag => {
           const focusTags = tag ? [tag] : [];
-          frameSync.hoverAnnotations(focusTags);
+          frameSync.focusAnnotations(focusTags);
         },
         10
       ),
@@ -63,26 +63,13 @@ function ThreadCard({ frameSync, thread }) {
   // parent component but the `Thread` itself has not changed.
   const threadContent = useMemo(() => <Thread thread={thread} />, [thread]);
 
-  // Handle requests to give this thread keyboard focus.
-  const focusRequest = store.annotationFocusRequest();
-  const cardRef = useRef(/** @type {HTMLElement|null} */ (null));
-  useEffect(() => {
-    if (focusRequest !== thread.id || !cardRef.current) {
-      return;
-    }
-    cardRef.current.focus();
-    store.clearAnnotationFocusRequest();
-  }, [focusRequest, store, thread.id]);
-
   return (
     /* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */
     <Card
-      classes={classnames('p-3 cursor-pointer focus-visible-ring', {
-        'is-hovered': isHovered,
+      classes={classnames('p-3 cursor-pointer', {
+        'is-focused': isFocused,
       })}
       data-testid="thread-card"
-      elementRef={cardRef}
-      tabIndex={-1}
       onClick={e => {
         // Prevent click events intended for another action from
         // triggering a page scroll.

@@ -101,46 +101,6 @@ function ToolbarButton({
   );
 }
 
-/**
- * Render non-visible content for screen readers to announce adder keyboard
- * shortcuts and count of annotations associated with the current selection.
- */
-function AdderToolbarShortcuts({
-  annotationCount,
-  isVisible,
-}: {
-  annotationCount: number;
-  isVisible: boolean;
-}) {
-  return (
-    <div className="sr-only">
-      <span
-        aria-live="polite"
-        aria-atomic="true"
-        role="status"
-        data-testid="annotation-count-announce"
-      >
-        {annotationCount > 0 && (
-          <span>
-            {annotationCount}{' '}
-            {annotationCount === 1 ? 'annotation' : 'annotations'} for this
-            selection.
-          </span>
-        )}
-      </span>
-      <ul aria-live="polite" data-testid="annotate-shortcuts-announce">
-        {isVisible && (
-          <>
-            {annotationCount > 0 && <li>Press {"'S'"} to show annotations.</li>}
-            <li>Press {"'A'"} to annotate.</li>
-            <li>Press {"'H'"} to highlight.</li>
-          </>
-        )}
-      </ul>
-    </div>
-  );
-}
-
 export type Command = 'annotate' | 'highlight' | 'show' | 'hide';
 
 type AdderToolbarProps = {
@@ -166,7 +126,9 @@ type AdderToolbarProps = {
  * The toolbar that is displayed above or below selected text in the document,
  * providing options to create annotations or highlights.
  *
+<<<<<<< HEAD:src/annotator/components/AdderToolbar.js
  * @param {AdderToolbarProps} props
+=======
  * The toolbar has nuanced styling for hover. The component structure is:
  *
  * <AdderToolbar>
@@ -197,6 +159,7 @@ type AdderToolbarProps = {
  *   badge will darken when its parent button is hovered, even if it is not
  *   hovered directly.
  *
+>>>>>>> 544c8e5c6 (Convert `AdderToolbar` to TypeScript):src/annotator/components/AdderToolbar.tsx
  */
 export default function AdderToolbar({
   arrowDirection,
@@ -280,10 +243,6 @@ export default function AdderToolbar({
         )}
       </div>
       <AdderToolbarArrow arrowDirection={arrowDirection} />
-      <AdderToolbarShortcuts
-        annotationCount={annotationCount}
-        isVisible={isVisible}
-      />
     </div>
   );
 }

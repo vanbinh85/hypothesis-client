@@ -1,10 +1,5 @@
-import {
-  buildCSS,
-  buildJS,
-  generateManifest,
-  runTests,
-  watchJS,
-} from '@hypothesis/frontend-build';
+import * as rollupUtils from './rolluputil.js';
+
 import changed from 'gulp-changed';
 import gulp from 'gulp';
 
@@ -13,6 +8,14 @@ import servePackage from './dev-server/serve-package.js';
 import tailwindConfig from './tailwind.config.mjs';
 import annotatorTailwindConfig from './tailwind-annotator.config.mjs';
 import sidebarTailwindConfig from './tailwind-sidebar.config.mjs';
+
+const {
+  buildCSS,
+  buildJS,
+  generateManifest,
+  runTests,
+  watchJS,
+} = rollupUtils;
 
 gulp.task('build-js', () => buildJS('./rollup.config.mjs'));
 gulp.task('watch-js', () => watchJS('./rollup.config.mjs'));
