@@ -26,11 +26,16 @@
  */
 
 /**
+ * @typedef { 'disabled'|'highlight'|'quotes'|'rectangle'|'pen' } AnnotationType
+ */
+
+/**
  * An object representing an annotation in the document.
  *
  * @typedef AnnotationData
  * @prop {string} uri
  * @prop {Target[]} target
+ * @prop { AnnotationType } type
  * @prop {string} $tag
  * @prop {boolean} [$highlight] -
  *   Flag indicating that this annotation was created using the "Highlight" button,

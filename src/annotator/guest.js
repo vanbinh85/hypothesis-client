@@ -4,6 +4,7 @@ import { generateHexString } from '../shared/random';
 
 import { Adder } from './adder';
 import { TextRange } from './anchoring/text-range';
+import { AnnotationEditorToolbarController } from './annotation-editor-toolbar';
 import { BucketBarClient } from './bucket-bar-client';
 import { FeatureFlags } from './features';
 import {
@@ -15,6 +16,7 @@ import {
   setHighlightsVisible,
 } from './highlighter';
 import { createIntegration } from './integrations';
+import { isPDF } from './integrations/pdf';
 import * as rangeUtil from './range-util';
 import { SelectionObserver, selectedRange } from './selection-observer';
 import { findClosestOffscreenAnchor } from './util/buckets';
@@ -22,6 +24,7 @@ import { frameFillsAncestor } from './util/frame';
 import { normalizeURI } from './util/url';
 
 /**
+ * @typedef {import('../types/annotator').AnnotationType} AnnotationType
  * @typedef {import('../types/annotator').AnnotationData} AnnotationData
  * @typedef {import('../types/annotator').Annotator} Annotator
  * @typedef {import('../types/annotator').Anchor} Anchor
@@ -146,10 +149,18 @@ export class Guest {
     this.selectedRanges = [];
 
     this._adder = new Adder(this.element, {
-      onAnnotate: () => this.createAnnotation(),
-      onHighlight: () => this.createAnnotation({ highlight: true }),
+      onAnnotate: () => this.createAnnotation({ type: 'quotes' }),
+      onHighlight: () => this.createAnnotation({ type: 'highlight', highlight: true }),
       onShowAnnotations: tags => this.selectAnnotations(tags),
     });
+    
+    if (isPDF()) {
+      /** @type {AnnotationEditorToolbarController} */
+      // @ts-ignore
+      this._annotationEditorToolbar = new AnnotationEditorToolbarController(document.getElementById('annotationEditorToolbarContainer'), {
+        annotationEditorModeChanged: (mode) => this.onAnnotationEditorModeChanged(mode)
+      });
+    }
 
     this._selectionObserver = new SelectionObserver(range => {
       if (range) {
@@ -192,6 +203,7 @@ export class Guest {
      * Integration that handles document-type specific functionality in the
      * guest.
      */
+    // access to AnnotationEditorUImanager
     this._integration = createIntegration(this);
     this._integration.on('uriChanged', async () => {
       const metadata = await this.getDocumentInfo();
@@ -619,9 +631,10 @@ export class Guest {
    *   @param {boolean} [options.highlight] - If true, the new annotation has
    *     the `$highlight` flag set, causing it to be saved immediately without
    *     prompting for a comment.
+   *   @param {AnnotationType} [options.type] - Type of annotation.
    * @return {Promise<AnnotationData>} - The new annotation
    */
-  async createAnnotation({ highlight = false } = {}) {
+  async createAnnotation({ type = 'highlight', highlight = false } = {}) {
     const ranges = this.selectedRanges;
     this.selectedRanges = [];
 
@@ -643,7 +656,8 @@ export class Guest {
       uri: info.uri,
       document: info.metadata,
       target,
-      $highlight: highlight,
+      type: type,
+      $highlight: type === 'highlight',
       $tag: 'a:' + generateHexString(8),
     };
 
@@ -767,6 +781,15 @@ export class Guest {
    */
   fitSideBySide(sidebarLayout) {
     this._sideBySideActive = this._integration.fitSideBySide(sidebarLayout);
+  }
+
+  /**
+   * Handle callbacks for the annotation editor toolbar.
+   * @param {AnnotationType} mode 
+   */
+  onAnnotationEditorModeChanged(mode) {
+    // @ts-ignore
+    this._integration.annotationEditorUIManager.updateMode(mode);
   }
 
   /**

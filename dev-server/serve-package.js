@@ -7,6 +7,7 @@ const log = require('fancy-log');
 
 const { createServer, useSsl } = require('./create-server');
 const { version } = require('../package.json');
+const path = require('path');
 
 /**
  * An express server which serves the contents of the package.
@@ -41,6 +42,7 @@ function servePackage(port) {
   app.get('/hypothesis', serveBootScript);
   app.get(`/hypothesis/${version}`, serveBootScript);
   app.use(`/hypothesis/${version}/`, express.static('.'));
+  app.use(`/hypothesis/${version}/build`, express.static('../build'));
 
   createServer(app).listen(port, () => {
     const scheme = useSsl ? 'https' : 'http';

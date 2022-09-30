@@ -63,6 +63,11 @@ function bundleConfig({ name, entry, format = 'es' }) {
         const url = new URL(`app:///${sourcePath}`);
         return url.toString();
       },
+
+      globals: {
+        'fabric': 'fabric',
+        'fabric/fabric-impl': 'fabric'
+      },
     },
     preserveEntrySignatures: false,
 
@@ -95,6 +100,7 @@ function bundleConfig({ name, entry, format = 'es' }) {
       }),
       ...prodPlugins,
     ],
+    external: ['fabric', 'fabric/fabric-impl'],
   };
 }
 

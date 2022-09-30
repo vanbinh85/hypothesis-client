@@ -82,12 +82,24 @@
  * @prop {(o?: GetTextContentParameters) => Promise<TextContent>} getTextContent
  */
 
+
+/**
+ * @typedef PDFPageViewport
+ * @prop {number} width
+ * @prop {number} height
+ * @prop {number[]} transform
+ * @prop {number[]} viewBox
+ * @prop {number} scale
+ * @prop {number} rotation
+ */
+
 /**
  * @typedef PDFPageView
  * @prop {HTMLElement} div - Container element for the PDF page
  * @prop {PDFPageProxy} pdfPage
  * @prop {TextLayer|null} textLayer
  * @prop {number} renderingState - See `RenderingStates` enum in src/annotator/anchoring/pdf.js
+ * @prop {PDFPageViewport} viewport
  */
 
 /**
@@ -97,6 +109,7 @@
  *
  * @prop {string} currentScaleValue - Zoom level/mode. This can be a string representation
  *   of a float or a special constant ("auto", "page-fit", "page-width" and more)
+ * @prop {number} currentPageNumber
  * @prop {number} pagesCount
  * @prop {EventBus} eventBus -
  *   Reference to the global event bus. Added in PDF.js v1.6.210.
@@ -111,6 +124,7 @@
  * @typedef EventBus
  * @prop {(event: string, listener: Function) => void} on
  * @prop {(event: string, listener: Function) => void} off
+ * @prop {(event: string, data?: {}) => void} dispatch
  */
 
 /**

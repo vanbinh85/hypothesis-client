@@ -1,6 +1,6 @@
 {
   "name": "hypothesis",
-  "version": "1.0.0-dummy-version",
+  "version": "1.0.0",
   "description": "Annotate with anyone, anywhere.",
   "license": "BSD-2-Clause",
   "homepage": "https://hypothes.is",
@@ -23,6 +23,7 @@
     "@sentry/cli": "^2.0.2",
     "@types/dompurify": "^2.3.3",
     "@types/escape-html": "^1.0.1",
+    "@types/fabric": "^4.5.12",
     "@types/hammerjs": "^2.0.41",
     "@types/katex": "^0.14.0",
     "@types/retry": "^0.12.1",
@@ -58,6 +59,7 @@
     "eslint-plugin-react": "^7.12.4",
     "eslint-plugin-react-hooks": "^4.0.4",
     "express": "^4.14.1",
+    "fabric": "^5.2.4",
     "fancy-log": "^2.0.0",
     "fetch-mock": "9",
     "focus-visible": "^5.0.0",
@@ -107,6 +109,7 @@
   "main": "./build/boot.js",
   "scripts": {
     "build": "cross-env NODE_ENV=production gulp build",
+    "build:dev": "cross-env NODE_ENV=development gulp build",
     "lint": "eslint .",
     "checkformatting": "prettier --check '**/*.{js,scss,ts,tsx,d.ts}'",
     "format": "prettier --list-different --write '**/*.{js,scss,ts,tsx,d.ts}'",

@@ -126,7 +126,14 @@ function preloadURL(doc, type, url) {
  * @param {string} path
  */
 function assetURL(config, path) {
-  return config.assetRoot + 'build/' + config.manifest[path];
+  path = config.manifest[path.replace('/', '\\')];
+  if (path) {
+    path = path.replace('\\', '/');
+  } else {
+    path = 'undefined';
+  }
+  //return config.assetRoot + 'build/' + path;
+  return config.assetRoot + 'build/' + path;
 }
 
 /**

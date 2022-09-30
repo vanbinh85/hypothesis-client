@@ -4,7 +4,7 @@
 
     // Needed for some npm packages
     "allowSyntheticDefaultImports": true,
-
+    "skipLibCheck": true,
     "checkJs": true,
     "lib": ["es2020", "dom", "dom.iterable"],
     "jsx": "react-jsx",

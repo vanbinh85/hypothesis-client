@@ -23,6 +23,15 @@ It’s used by the [Hypothesis browser extension][ext], and can also be
 Development
 -----------
 
+```cmd
+npm install
+
+npm run build:dev
+
+cd dev-server
+node app.js
+```
+
 See the client [Development Guide][developers] for instructions on building,
 testing and contributing to the client.
 
